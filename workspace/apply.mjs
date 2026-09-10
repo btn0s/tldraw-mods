@@ -27,7 +27,10 @@ async function request(path, body) {
 
 const docs = (await request('/api/search', { code: 'return await api.getDocs()' }))
 	.filter(doc => doc.ownership === 'local' && (target ? doc.filePath === target : doc.filePath.startsWith(root + '/')))
-if (!docs.length) throw new Error(target ? `Open ${target} in tldraw offline first.` : `No documents from ${root} are open in tldraw offline.`)
+if (!docs.length) {
+	console.error(target ? `Open ${target} in tldraw offline first.` : `No document from ${root} is open in tldraw offline.`)
+	process.exit(2)
+}
 const output = await bundle()
 
 async function apply(doc) {

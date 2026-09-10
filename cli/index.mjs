@@ -31,7 +31,7 @@ Hub: ${hub} (override with TLDRAW_MODS_HUB)`
 function run(file, argv, options = {}) {
 	return new Promise((done, fail) => {
 		const child = spawn(file, argv, { stdio: 'inherit', cwd, ...options })
-		child.on('exit', code => code === 0 ? done() : fail(new Error(`${basename(file)} ${argv[0] ?? ''} exited with ${code}`)))
+		child.on('exit', code => code === 0 ? done() : fail(Object.assign(new Error(`${basename(argv[0] ?? file)} exited with ${code}`), { code })))
 		child.on('error', fail)
 	})
 }
@@ -62,9 +62,10 @@ async function apply(doc) {
 // Build, then apply if a matching document is open; otherwise say how.
 async function applyOrBuild() {
 	if (flags.has('--no-apply')) return build()
-	try { await apply() } catch {
+	try { await apply() } catch (error) {
+		if (error.code !== 2) throw error
 		await build()
-		console.log('\nNo open document from this directory. Open one in tldraw offline, then: tldraw-mods apply')
+		console.log('Then: tldraw-mods apply')
 	}
 }
 
