@@ -37,7 +37,6 @@ h1{font-size:28px;letter-spacing:-.01em;margin:24px 0 8px}h2{font-size:17px;marg
 code{font:13px var(--mono)}pre{background:var(--well);border-radius:10px;padding:12px 14px;overflow:auto;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}p>code,li>code,li code{background:var(--well);padding:2px 6px;border-radius:4px}
 input{width:100%;font:inherit;padding:10px 14px;border:0;border-radius:10px;background:var(--well);color:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.08);margin:8px 0 20px}input:focus{outline:none}
 #mods{list-style:none;padding:0;margin:0;display:grid;gap:12px}#mods li{padding:16px;border-radius:10px;border:1px solid var(--line);display:grid;gap:6px}video{width:100%;height:auto;aspect-ratio:16/10;border-radius:6px;background:var(--well);display:block;margin-bottom:6px}main>video{border-radius:10px;margin:0 0 20px}@media(prefers-reduced-motion:reduce){video{display:none}}#mods li a{text-decoration:none}#mods li p{margin:0;color:var(--muted)}#mods li code{background:var(--well);padding:4px 8px;border-radius:6px;justify-self:start}
-details{margin:0 0 8px;padding:12px 16px;border:1px solid var(--line);border-radius:10px}summary{cursor:pointer;font-weight:600}details ol{padding-left:20px}details li{margin:6px 0}
 ul.plain{list-style:none;padding:0;margin:0}.alt{color:var(--muted)}footer{color:var(--muted);font-size:13px;padding:40px 20px}
 `
 
@@ -70,18 +69,16 @@ const description = 'New shapes and tools for the tldraw offline app. Install an
 const index = page('tldraw-mods: new shapes and tools for tldraw offline', `
 <h1>Mods for tldraw offline</h1>
 <p class="lede">New shapes and tools for the <a href="https://offline.tldraw.com">tldraw offline</a> app. Pick one, run one command, and it is in your drawing.</p>
-<pre><code>npx tldraw-mods init
-npx tldraw-mods add landmark</code></pre>
-<details><summary>How to use</summary>
-<p>You need the <a href="https://offline.tldraw.com">tldraw offline</a> app and Node.js 20 or newer. Mods go into one drawing at a time; the <code>.tldraw</code> file carries them, and the app runs them whenever the file is opened.</p>
-<ol>
-<li><strong>Make a folder and save your drawing in it.</strong> <code>mkdir my-canvas &amp;&amp; cd my-canvas</code>, then in the app File → New and File → Save into that folder.</li>
-<li><strong>Set up the folder</strong>, once: <code>npx tldraw-mods init</code>. Downloads the build files and installs what they need.</li>
-<li><strong>Add mods</strong> while the drawing is open: <code>npx tldraw-mods add landmark</code>. The mod is downloaded, built, put into the open drawing, and saved. The new tool shows up after the rectangle tool.</li>
-<li><strong>Later:</strong> <code>list</code> shows what you can add, <code>remove browser</code> takes one out, <code>apply</code> reloads after you change files yourself. The mods stay inside the <code>.tldraw</code> file wherever it goes; the folder is only for adding and removing.</li>
-</ol>
-<p>Drawing saved somewhere else? <code>npx tldraw-mods add landmark --doc=/path/to/file.tldraw</code>. Mods from other repos work too: <code>npx tldraw-mods add owner/repo/name</code>. Only install mods from people you trust; a mod is code that runs with the app's permissions every time the drawing is opened.</p>
-</details>
+<h2 class="sub">How to use</h2>
+<p>Needs the <a href="https://offline.tldraw.com">tldraw offline</a> app and Node.js 20+. Make a folder, save a drawing in it, and set it up once:</p>
+<pre><code>mkdir my-canvas &amp;&amp; cd my-canvas   # then File → Save the drawing here
+npx tldraw-mods init</code></pre>
+<p>With the drawing open in the app, add mods. Each one is downloaded, built, and saved into the drawing:</p>
+<pre><code>npx tldraw-mods add landmark
+npx tldraw-mods list
+npx tldraw-mods remove landmark</code></pre>
+<p>The mods stay inside the <code>.tldraw</code> file wherever it goes. Only install from people you trust.</p>
+<h2 class="sub">Mods</h2>
 <input id="q" type="search" placeholder="Search mods" aria-label="Search mods" autocomplete="off">
 <ul id="mods">${cards.join('\n')}</ul>
 <script>const q=document.getElementById('q'),items=[...document.querySelectorAll('#mods li')];q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();for(const li of items)li.hidden=v&&!li.dataset.search.includes(v)})</script>`, {
