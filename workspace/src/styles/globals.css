@@ -1,0 +1,112 @@
+/*
+ * shadcn's global stylesheet, wired to the design language in ui.ts. Every shadcn token (--background, --primary, …)
+ * is derived from a --ui-* token, so ui.ts stays the single source of truth and light/dark flip through it: there is
+ * no separate .dark block. Tailwind additionally exposes the language's surfaces as utilities:
+ *   bg-panel / bg-key / bg-key-hover / bg-selected / bg-well   (the gradient faces)
+ *   shadow-panel / shadow-attached / shadow-key / shadow-selected / shadow-well   (the soft depth)
+ *   rounded-sm|md|lg = kbd 4px | key 7px | panel 10px;  font-sans / font-mono = --ui-font / --ui-mono
+ *
+ * Differences from a stock shadcn app, forced by living inside the tldraw app:
+ * 1. No Preflight: theme + utilities only. Preflight would reset tldraw's own UI. Utilities are deliberately NOT in a
+ *    cascade layer: the app's own (unlayered) stylesheet would beat any layered rule regardless of specificity, so
+ *    `text-foreground` would lose to tldraw's `button { color: inherit }`. Unlayered, they win on class specificity.
+ * 2. Tokens are declared on .tl-container (where ui.ts declares --ui-*), never :root, and `dark:` keys off tldraw's
+ *    .tl-theme__dark. Radii are also declared as real custom properties there because components reference
+ *    var(--radius-md) inside arbitrary values, which need a property that resolves in the tree.
+ * 3. No `@layer base` body/universal rules: they would restyle the whole app, not our components.
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.tl-theme__dark *));
+
+@theme inline {
+  --font-sans: var(--ui-font);
+  --font-mono: var(--ui-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius-4xl: var(--radius-4xl);
+
+  --background-image-panel: var(--ui-panel);
+  --background-image-key: var(--ui-key);
+  --background-image-key-hover: var(--ui-key-hover);
+  --background-image-selected: var(--ui-selected);
+  --background-image-well: var(--ui-well);
+
+  --shadow-panel: var(--ui-shadow-panel);
+  --shadow-attached: var(--ui-shadow-attached);
+  --shadow-key: var(--ui-shadow-key);
+  --shadow-selected: var(--ui-shadow-selected);
+  --shadow-well: var(--ui-shadow-well);
+
+  /* A light sweep across a surface that is being regenerated. */
+  --animate-shimmer: shimmer 1800ms ease-in-out infinite;
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+  }
+}
+
+.tl-container {
+  --radius-sm: var(--ui-radius-kbd);
+  --radius-md: var(--ui-radius-key);
+  --radius-lg: var(--ui-radius);
+  --radius-xl: calc(var(--ui-radius) * 1.4);
+  --radius-2xl: calc(var(--ui-radius) * 1.8);
+  --radius-3xl: calc(var(--ui-radius) * 2.2);
+  --radius-4xl: calc(var(--ui-radius) * 2.6);
+
+  --background: var(--ui-bg);
+  --foreground: var(--ui-ink);
+  --card: var(--ui-panel-solid);
+  --card-foreground: var(--ui-ink);
+  --popover: var(--ui-panel-solid);
+  --popover-foreground: var(--ui-ink);
+  /* Primary is ink on paper: the strongest thing in a zero-chroma language. */
+  --primary: var(--ui-ink);
+  --primary-foreground: var(--ui-bg);
+  /* Secondary, muted, and accent are the same quiet face; the language has one neutral step, not three. */
+  --secondary: color-mix(in srgb, var(--ui-ink) 6%, var(--ui-bg));
+  --secondary-foreground: var(--ui-ink);
+  --muted: color-mix(in srgb, var(--ui-ink) 6%, var(--ui-bg));
+  --muted-foreground: var(--ui-ink-2);
+  --accent: color-mix(in srgb, var(--ui-ink) 6%, var(--ui-bg));
+  --accent-foreground: var(--ui-ink);
+  --border: var(--ui-line);
+  --input: var(--ui-line);
+  --ring: var(--ui-ring);
+  /* The one chromatic token; shadcn's own values, since the language has no red. */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: var(--ui-bg);
+}
+
+.tl-theme__dark {
+  --destructive: oklch(0.704 0.191 22.216);
+}

@@ -1,0 +1,4 @@
+node_modules/
+src/mods/index.ts
+*.tldraw
+.DS_Store

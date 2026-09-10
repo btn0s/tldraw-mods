@@ -1,0 +1,26 @@
+{
+	// Types come from the installed desktop app, exactly as its generated script-workspace jsconfig maps them.
+	"compilerOptions": {
+		"target": "es2022",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"jsx": "react-jsx",
+		"lib": ["es2022", "dom", "dom.iterable"],
+		"strict": true,
+		"allowJs": true,
+		"checkJs": false,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"isolatedModules": true,
+		"paths": {
+			"@/*": ["./src/*"],
+			"tldraw": ["/Applications/tldraw offline.app/Contents/Resources/sdk-types/tldraw.d.mts"],
+			"@tldraw/*": ["/Applications/tldraw offline.app/Contents/Resources/sdk-types/@tldraw/*.d.mts"],
+			"react": ["/Applications/tldraw offline.app/Contents/Resources/sdk-types/@types/react/index.d.ts"],
+			"react/jsx-runtime": ["/Applications/tldraw offline.app/Contents/Resources/sdk-types/@types/react/jsx-runtime.d.ts"],
+			"react-dom": ["/Applications/tldraw offline.app/Contents/Resources/sdk-types/@types/react-dom/index.d.ts"],
+			"tldraw-offline/script-context": ["/Applications/tldraw offline.app/Contents/Resources/script-context.d.ts"]
+		}
+	},
+	"include": ["src/**/*"]
+}
