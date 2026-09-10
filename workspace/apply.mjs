@@ -28,7 +28,7 @@ async function request(path, body) {
 const docs = (await request('/api/search', { code: 'return await api.getDocs()' }))
 	.filter(doc => doc.ownership === 'local' && doc.filePath && (target ? doc.filePath === target : doc.filePath.startsWith(root + '/')))
 if (!docs.length) {
-	console.error(target ? `Open ${target} in tldraw offline first.` : `No document from ${root} is open in tldraw offline.`)
+	console.error(target ? `Open ${target} in tldraw offline first.` : `No drawing saved in ${root} is open in tldraw offline. Open one, or pass --doc=<file.tldraw>.`)
 	process.exit(2)
 }
 const output = await bundle()
@@ -49,7 +49,7 @@ async function apply(doc) {
 			if (error.message.includes('"error":"Editor not mounted"')) continue
 			throw error
 		}
-		console.log(`Applied and saved: ${doc.filePath}`)
+		console.log(`Updated and saved: ${doc.filePath}`)
 		return
 	}
 	throw new Error(`${doc.filePath}: script watcher did not finish within 10 seconds. Inspect script-status before retrying.`)

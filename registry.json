@@ -6,61 +6,143 @@
     {
       "name": "workspace",
       "type": "registry:item",
-      "title": "Workspace",
-      "description": "Document-script workspace for tldraw offline: esbuild + Tailwind build, apply-to-open-document, and a shell that loads every mod in src/mods/.",
-      "categories": ["workspace"],
-      "dependencies": ["cn", "lucide-react", "tw-animate-css", "shadcn", "@base-ui/react"],
-      "devDependencies": ["esbuild", "tailwindcss", "@tailwindcss/node", "@tailwindcss/oxide", "typescript"],
-      "files": [
-        { "path": "workspace/build.mjs", "type": "registry:file", "target": "~/build.mjs" },
-        { "path": "workspace/apply.mjs", "type": "registry:file", "target": "~/apply.mjs" },
-        { "path": "workspace/tailwind-plugin.mjs", "type": "registry:file", "target": "~/tailwind-plugin.mjs" },
-        { "path": "workspace/src/config.tsx", "type": "registry:file", "target": "~/src/config.tsx" },
-        { "path": "workspace/src/mod.ts", "type": "registry:file", "target": "~/src/mod.ts" },
-        { "path": "workspace/src/ui.ts", "type": "registry:file", "target": "~/src/ui.ts" },
-        { "path": "workspace/src/assets.d.ts", "type": "registry:file", "target": "~/src/assets.d.ts" },
-        { "path": "workspace/src/styles/globals.css", "type": "registry:file", "target": "~/src/styles/globals.css" },
-        { "path": "workspace/src/lib/utils.ts", "type": "registry:file", "target": "~/src/lib/utils.ts" }
+      "title": "Folder setup",
+      "description": "The build files a folder needs before mods can be added: bundles everything in src/mods/ into one file and puts it into the open drawing. Installed by tldraw-mods init.",
+      "categories": [
+        "setup"
       ],
-      "docs": "Build: npm run build. Apply to the open document: npm run apply [path.tldraw]. Add mods with: npx tldraw-mods add <name>."
+      "dependencies": [
+        "cn",
+        "lucide-react",
+        "tw-animate-css",
+        "shadcn",
+        "@base-ui/react"
+      ],
+      "devDependencies": [
+        "esbuild",
+        "tailwindcss",
+        "@tailwindcss/node",
+        "@tailwindcss/oxide",
+        "typescript"
+      ],
+      "files": [
+        {
+          "path": "workspace/build.mjs",
+          "type": "registry:file",
+          "target": "~/build.mjs"
+        },
+        {
+          "path": "workspace/apply.mjs",
+          "type": "registry:file",
+          "target": "~/apply.mjs"
+        },
+        {
+          "path": "workspace/tailwind-plugin.mjs",
+          "type": "registry:file",
+          "target": "~/tailwind-plugin.mjs"
+        },
+        {
+          "path": "workspace/src/config.tsx",
+          "type": "registry:file",
+          "target": "~/src/config.tsx"
+        },
+        {
+          "path": "workspace/src/mod.ts",
+          "type": "registry:file",
+          "target": "~/src/mod.ts"
+        },
+        {
+          "path": "workspace/src/ui.ts",
+          "type": "registry:file",
+          "target": "~/src/ui.ts"
+        },
+        {
+          "path": "workspace/src/assets.d.ts",
+          "type": "registry:file",
+          "target": "~/src/assets.d.ts"
+        },
+        {
+          "path": "workspace/src/styles/globals.css",
+          "type": "registry:file",
+          "target": "~/src/styles/globals.css"
+        },
+        {
+          "path": "workspace/src/lib/utils.ts",
+          "type": "registry:file",
+          "target": "~/src/lib/utils.ts"
+        }
+      ],
+      "docs": "Build: npm run build. Put it into the open drawing: npm run apply. Add mods: npx tldraw-mods add <name>."
     },
     {
       "name": "tool-chrome",
       "type": "registry:lib",
       "title": "Tool chrome",
-      "description": "Shared editing plumbing for box-shaped mods: EditingBoxShapeTool, useShapeEditing, ToolChrome slots, and self-sizing ToolChromeField.",
-      "categories": ["lib"],
-      "dependencies": ["cn"],
+      "description": "Shared code for mods that are boxes you type into: click-or-drag placement, an editing mode, and small controls that float around the edges. Landmark and Browser both use it.",
+      "categories": [
+        "shared code"
+      ],
+      "dependencies": [
+        "cn"
+      ],
       "files": [
-        { "path": "workspace/src/tool-chrome.tsx", "type": "registry:lib", "target": "~/src/tool-chrome.tsx" },
-        { "path": "workspace/src/lib/utils.ts", "type": "registry:lib", "target": "~/src/lib/utils.ts" }
+        {
+          "path": "workspace/src/tool-chrome.tsx",
+          "type": "registry:lib",
+          "target": "~/src/tool-chrome.tsx"
+        },
+        {
+          "path": "workspace/src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "~/src/lib/utils.ts"
+        }
       ]
     },
     {
       "name": "landmark",
       "type": "registry:component",
       "title": "Landmark",
-      "description": "A hollow dashed named area with a constant-screen-size pin chip. Clicks inside fall through to the shapes it marks; a brush must enclose it fully. Adds a Create landmark command that wraps the selection.",
-      "categories": ["shape"],
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["btn0s/tldraw-mods/tool-chrome"],
-      "files": [
-        { "path": "workspace/src/mods/landmark.tsx", "type": "registry:component", "target": "~/src/mods/landmark.tsx" }
+      "description": "A named dashed outline you draw around a group of shapes. Its label stays the same size on screen as you zoom out, so you can find your way around a big drawing. Clicking inside it selects what is inside, not the outline.",
+      "categories": [
+        "shape"
       ],
-      "docs": "Installed to src/mods/. Run npm run apply to load it into the open document."
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "btn0s/tldraw-mods/tool-chrome"
+      ],
+      "files": [
+        {
+          "path": "workspace/src/mods/landmark.tsx",
+          "type": "registry:component",
+          "target": "~/src/mods/landmark.tsx"
+        }
+      ],
+      "docs": "Added to src/mods/. If the drawing did not reload on its own, run: npm run apply"
     },
     {
       "name": "browser",
       "type": "registry:component",
       "title": "Browser",
-      "description": "An embedded web page. Click to place or drag to size; type a URL in the pill above the frame. Phone, tablet, and desktop viewport presets float above the right edge.",
-      "categories": ["shape"],
-      "dependencies": ["lucide-react"],
-      "registryDependencies": ["btn0s/tldraw-mods/tool-chrome"],
-      "files": [
-        { "path": "workspace/src/mods/browser.tsx", "type": "registry:component", "target": "~/src/mods/browser.tsx" }
+      "description": "A web page inside your drawing. Click to place it or drag to size it, type an address in the bar above it, and switch between phone, tablet, and desktop widths with the buttons on the right.",
+      "categories": [
+        "shape"
       ],
-      "docs": "Installed to src/mods/. Run npm run apply to load it into the open document. Sites that send X-Frame-Options or CSP frame-ancestors will not embed."
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "btn0s/tldraw-mods/tool-chrome"
+      ],
+      "files": [
+        {
+          "path": "workspace/src/mods/browser.tsx",
+          "type": "registry:component",
+          "target": "~/src/mods/browser.tsx"
+        }
+      ],
+      "docs": "Added to src/mods/. If the drawing did not reload on its own, run: npm run apply. Some sites refuse to be embedded and will show blank."
     }
   ]
 }

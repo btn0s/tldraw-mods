@@ -28,9 +28,9 @@ const source = item => item.files?.[0] ? `${registry.homepage}/blob/main/${item.
 const page = (title, body, depth = 0) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><link rel="stylesheet" href="${'../'.repeat(depth)}style.css"></head>
-<body><header><a href="${'../'.repeat(depth) || './'}"><strong>tldraw-mods</strong></a><nav><a href="${registry.homepage}">GitHub</a><a href="${'../'.repeat(depth)}protocol/">Publish a mod</a></nav></header>
+<body><header><a href="${'../'.repeat(depth) || './'}"><strong>tldraw-mods</strong></a><nav><a href="${registry.homepage}">GitHub</a><a href="${'../'.repeat(depth)}protocol/">Share your own</a></nav></header>
 <main>${body}</main>
-<footer>A <a href="https://ui.shadcn.com/docs/registry/github">shadcn GitHub registry</a> for <a href="https://github.com/tldraw/tldraw-offline">tldraw offline</a> document scripts. Not affiliated with tldraw.</footer>
+<footer>Add-ons for the <a href="https://offline.tldraw.com">tldraw offline</a> app, installed with the <a href="https://ui.shadcn.com/docs/cli">shadcn CLI</a>. Not affiliated with tldraw.</footer>
 </body></html>`
 
 const card = (item, c) => `<li data-search="${esc(`${item.name} ${item.title} ${item.description} ${(item.categories ?? []).join(' ')}`.toLowerCase())}">
@@ -43,18 +43,18 @@ const clips = Object.fromEntries(await Promise.all(registry.items.map(async item
 const cards = registry.items.map(item => card(item, clips[item.name]))
 const index = page('tldraw-mods', `
 <h1>Mods for tldraw offline</h1>
-<p class="lede">Custom shapes, tools, and UI for <a href="https://github.com/tldraw/tldraw-offline">tldraw offline</a> documents. Install any of them into a document with one command.</p>
+<p class="lede">New shapes and tools for the <a href="https://offline.tldraw.com">tldraw offline</a> app. Pick one, run one command, and it is in your drawing.</p>
 <pre><code>npx tldraw-mods init
 npx tldraw-mods add landmark</code></pre>
 <details><summary>How to use</summary>
-<p>You need the <a href="https://offline.tldraw.com">tldraw offline</a> app and Node 20+. Mods are per document: each <code>.tldraw</code> file carries its own script, assembled in a workspace folder.</p>
+<p>You need the <a href="https://offline.tldraw.com">tldraw offline</a> app and Node.js 20 or newer. Mods go into one drawing at a time; the <code>.tldraw</code> file carries them, and the app runs them whenever the file is opened.</p>
 <ol>
-<li><strong>Make a folder and save your document in it.</strong> <code>mkdir my-canvas &amp;&amp; cd my-canvas</code>, then File → New in the app and File → Save into that folder.</li>
-<li><strong>Set up the workspace</strong>, once per folder: <code>npx tldraw-mods init</code>. Writes the build and a <code>src/</code> with the shell, and installs dependencies.</li>
-<li><strong>Add mods</strong> with the document open: <code>npx tldraw-mods add landmark</code>. Downloads into <code>src/mods/</code>, bundles, loads into the open document, saves. The tool appears at the end of the toolbar.</li>
-<li><strong>Later:</strong> <code>list</code>, <code>remove browser</code>, or <code>apply</code> after editing <code>src/</code>. The script is saved inside the <code>.tldraw</code> file, so the document keeps its mods wherever it is opened.</li>
+<li><strong>Make a folder and save your drawing in it.</strong> <code>mkdir my-canvas &amp;&amp; cd my-canvas</code>, then in the app File → New and File → Save into that folder.</li>
+<li><strong>Set up the folder</strong>, once: <code>npx tldraw-mods init</code>. Downloads the build files and installs what they need.</li>
+<li><strong>Add mods</strong> while the drawing is open: <code>npx tldraw-mods add landmark</code>. The mod is downloaded, built, put into the open drawing, and saved. The new tool shows up after the rectangle tool.</li>
+<li><strong>Later:</strong> <code>list</code> shows what you can add, <code>remove browser</code> takes one out, <code>apply</code> reloads after you change files yourself. The mods stay inside the <code>.tldraw</code> file wherever it goes; the folder is only for adding and removing.</li>
 </ol>
-<p>Document elsewhere? <code>npx tldraw-mods add landmark --doc=/path/to/file.tldraw</code>. Any shadcn GitHub registry works: <code>npx tldraw-mods add owner/repo/item</code>. Only install mods from people you trust; a document script runs with the app's permissions whenever the file is opened.</p>
+<p>Drawing saved somewhere else? <code>npx tldraw-mods add landmark --doc=/path/to/file.tldraw</code>. Mods from other repos work too: <code>npx tldraw-mods add owner/repo/name</code>. Only install mods from people you trust; a mod is code that runs with the app's permissions every time the drawing is opened.</p>
 </details>
 <input id="q" type="search" placeholder="Search mods" aria-label="Search mods" autocomplete="off">
 <ul id="mods">${cards.join('\n')}</ul>
@@ -66,18 +66,18 @@ const detail = item => page(`${item.title ?? item.name} · tldraw-mods`, `
 <p class="lede">${esc(item.description)}</p>
 ${video(clips[item.name], 1)}
 <pre><code>${esc(install(item))}</code></pre>
-<p class="alt">Or with the shadcn CLI: <code>npx shadcn@latest add ${esc(hub)}/${esc(item.name)}</code></p>
-${item.docs ? `<h3>After install</h3><pre><code>${esc(item.docs)}</code></pre>` : ''}
-<h3>Files</h3><ul class="plain">${(item.files ?? []).map(f => `<li><code>${esc(f.target ?? f.path)}</code></li>`).join('')}</ul>
-${item.dependencies?.length ? `<h3>npm dependencies</h3><ul class="plain">${item.dependencies.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : ''}
-${item.registryDependencies?.length ? `<h3>Registry dependencies</h3><ul class="plain">${item.registryDependencies.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : ''}
-<p><a href="${source(item)}">Source</a> · <a href="../r/${esc(item.name)}.json">registry JSON</a></p>`, 1)
+<p class="alt">Without the tldraw-mods command: <code>npx shadcn@latest add ${esc(hub)}/${esc(item.name)}</code></p>
+${item.docs ? `<h3>After installing</h3><pre><code>${esc(item.docs)}</code></pre>` : ''}
+<h3>Files it adds</h3><ul class="plain">${(item.files ?? []).map(f => `<li><code>${esc((f.target ?? f.path).replace(/^~\//, ''))}</code></li>`).join('')}</ul>
+${item.dependencies?.length ? `<h3>Packages it installs</h3><ul class="plain">${item.dependencies.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : ''}
+${item.registryDependencies?.length ? `<h3>Other mods it needs</h3><ul class="plain">${item.registryDependencies.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : ''}
+<p><a href="${source(item)}">Source code</a> · <a href="../r/${esc(item.name)}.json">Install manifest</a></p>`, 1)
 
-const protocol = page('Publish a mod · tldraw-mods', `
-<h1>Publish a mod</h1>
-<p class="lede">Mods live in your own repository. The hub is a catalog: it points at your registry, validates it nightly, and lists it here.</p>
+const protocol = page('Share your own mod · tldraw-mods', `
+<h1>Share your own mod</h1>
+<p class="lede">Your mod stays in your own GitHub repo. This site only keeps a list that points at it, checks every night that it still installs, and shows it on the front page.</p>
 <h3>1. Write the mod</h3>
-<p>A mod is one file, <code>src/mods/&lt;name&gt;.tsx</code>, whose default export is tldraw offline's own config-script function. Optional named exports <code>tool</code> and <code>commands</code> put it in the toolbar and context menu.</p>
+<p>A mod is one file, <code>src/mods/&lt;name&gt;.tsx</code>. Its default export is a function that gets the app's setup object and adds to it: a shape class, a tool class, whatever you need. It is the same function the app already uses for its own <code>config.js</code>. Two optional exports, <code>tool</code> and <code>commands</code>, add a toolbar button and right-click menu entries.</p>
 <pre><code>import type { ModConfig, ModTool } from '@/mod'
 import { MyShapeTool, MyShapeUtil, myIcon } from './my-shape-impl'
 
@@ -86,8 +86,9 @@ export default (({ config }) =&gt; {
   config.shapeUtils.push(MyShapeUtil)
   config.tools.push(MyShapeTool)
 }) satisfies ModConfig</code></pre>
-<p>Develop it inside a workspace made by <code>npx tldraw-mods init</code>; <code>npm run apply</code> loads it into the open document.</p>
-<h3>2. Add registry.json to your repo root</h3>
+<p>Write it inside a folder made by <code>npx tldraw-mods init</code>, with a drawing saved there and open in the app. <code>npm run apply</code> puts your work into the drawing so you can try it.</p>
+<h3>2. Add a registry.json to the root of your repo</h3>
+<p>This file tells the installer what to download and where to put it.</p>
 <pre><code>{
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "my-mods",
@@ -103,18 +104,18 @@ export default (({ config }) =&gt; {
   }]
 }</code></pre>
 <ul>
-<li>Targets are explicit <code>~/src/mods/…</code> paths so relative imports keep working.</li>
-<li>Never list <code>tldraw</code>, <code>react</code>, or <code>react-dom</code> as dependencies; the app provides them.</li>
-<li>Run <code>npx shadcn@latest registry validate</code> before pushing.</li>
+<li><code>target</code> is where the file lands in the user's folder. Keep it under <code>~/src/mods/</code> so the build finds it.</li>
+<li>Do not list <code>tldraw</code>, <code>react</code>, or <code>react-dom</code> under <code>dependencies</code>. The app already has them, and installing a second copy breaks things.</li>
+<li>Run <code>npx shadcn@latest registry validate</code> in your repo before you push. It checks the file and that everything it names exists.</li>
 </ul>
-<p>At this point anyone can install it: <code>npx tldraw-mods add you/my-mods/my-shape</code>.</p>
-<h3>3. List it here</h3>
-<p>Open a pull request on <a href="${registry.homepage}">${esc(hub)}</a> adding a pointer item to <code>registry.json</code>:</p>
+<p>Once pushed, anyone can install it: <code>npx tldraw-mods add you/my-mods/my-shape</code>.</p>
+<h3>3. Get it listed here</h3>
+<p>Open a pull request on <a href="${registry.homepage}">${esc(hub)}</a> that adds an entry to <code>registry.json</code> pointing at yours:</p>
 <pre><code>{ "name": "my-shape", "type": "registry:component", "title": "My shape", "description": "One sentence.",
   "categories": ["shape"], "registryDependencies": ["you/my-mods/my-shape"], "files": [],
   "meta": { "video": "https://…/my-shape.mp4", "poster": "https://…/my-shape.jpg" } }</code></pre>
-<p><code>meta.video</code> is optional: a short silent mp4 (16:10, ~10 s) that loops on your card. Point it at a file in your repo via raw.githubusercontent.com, or a release asset.</p>
-<p>CI validates your registry on every PR and nightly; a broken upstream is flagged, not silently dropped.</p>`, 1)
+<p><code>meta.video</code> is optional: a short silent mp4 (16:10, about 10 seconds) that loops on your card. Link to a file in your repo through raw.githubusercontent.com, or to a release asset.</p>
+<p>The check that runs on every pull request and every night installs from your repo. If that stops working, the entry is marked broken rather than removed.</p>`, 1)
 
 const css = `
 :root{--bg:#f5f5f5;--fg:#0f0f0f;--muted:#6a6a6a;--well:#ececec;--line:#dcdcdc;--font:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}

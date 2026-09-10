@@ -1,13 +1,21 @@
 {
   "name": "tldraw-mods",
   "version": "0.1.0",
-  "description": "Install mods into a tldraw offline document-script workspace from any shadcn GitHub registry.",
+  "description": "Add mods (new shapes and tools) to tldraw offline drawings from the command line.",
   "license": "MIT",
   "type": "module",
-  "bin": { "tldraw-mods": "./index.mjs" },
-  "files": ["index.mjs"],
+  "bin": {
+    "tldraw-mods": "./index.mjs"
+  },
+  "files": [
+    "index.mjs"
+  ],
   "repository": "github:btn0s/tldraw-mods",
   "homepage": "https://github.com/btn0s/tldraw-mods",
-  "engines": { "node": ">=20" },
-  "dependencies": { "shadcn": "4.21.0" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "shadcn": "4.21.0"
+  }
 }

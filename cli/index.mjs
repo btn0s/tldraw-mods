@@ -18,17 +18,18 @@ const cwd = process.cwd()
 
 const usage = `tldraw-mods <command>
 
-  init [dir]         Create a document-script workspace (default: current directory)
-  add <mod...>       Install mods from the hub, or owner/repo/item from any shadcn GitHub registry
-  remove <mod...>    Delete src/mods/<mod>.tsx
-  list               Mods in the hub
-  search <query>     Filter the hub
-  apply [doc.tldraw] Bundle and load into the open document(s)
-  build              Bundle only, as a check
+  init [folder]      Set up a folder for adding mods to a drawing (default: this folder)
+  add <mod...>       Add mods to the open drawing. Use owner/repo/name for mods from other repos
+  remove <mod...>    Take mods out of the open drawing
+  list               Show every mod you can add
+  search <words>     Search that list
+  apply [file]       Rebuild and reload after you change files yourself
+  build              Rebuild only, to check for errors
 
-Flags: --doc=<file.tldraw> apply to that document instead of ones inside this folder (add/remove)
-       --dry-run (add), --no-apply (add/remove)
-Hub: ${hub} (override with TLDRAW_MODS_HUB)`
+Options: --doc=<file.tldraw>  the drawing to update, if it is not saved in this folder
+         --dry-run            show what add would do without doing it
+         --no-apply           add or remove files without reloading the drawing
+Mods come from ${hub}. Set TLDRAW_MODS_HUB to use a different repo.`
 
 function run(file, argv, options = {}) {
 	return new Promise((done, fail) => {
@@ -50,7 +51,7 @@ async function fetchRegistry() {
 
 async function requireWorkspace() {
 	if (!await exists(join(cwd, 'build.mjs')) || !await exists(join(cwd, 'src/config.tsx'))) {
-		throw new Error(`No workspace in ${cwd}. Run: tldraw-mods init`)
+		throw new Error(`This folder is not set up yet. Run: tldraw-mods init`)
 	}
 }
 
@@ -67,7 +68,7 @@ async function applyOrBuild() {
 	try { await apply(doc) } catch (error) {
 		if (error.code !== 2) throw error
 		await build()
-		console.log('Then: tldraw-mods apply')
+		console.log('Open the drawing in tldraw offline, then run: tldraw-mods apply')
 	}
 }
 
@@ -82,22 +83,22 @@ async function init() {
 	if (!await exists(join(dir, 'tsconfig.json'))) await writeFile(join(dir, 'tsconfig.json'), tsconfig)
 	if (!await exists(join(dir, 'components.json'))) await writeFile(join(dir, 'components.json'), componentsJson)
 	await run(process.execPath, [shadcnBin, 'add', `${hub}/workspace`, '--yes', '--overwrite'], { cwd: dir })
-	console.log(`\nWorkspace ready in ${dir}. Next: tldraw-mods add landmark`)
+	console.log(`\nReady. Save a drawing in ${dir}, open it in tldraw offline, then: tldraw-mods add landmark`)
 }
 
 async function add() {
 	await requireWorkspace()
-	if (!positional.length) throw new Error('add: name a mod')
+	if (!positional.length) throw new Error('Which mod? Example: tldraw-mods add landmark')
 	await shadcn('add', ...positional.map(address), '--yes', '--overwrite', ...(flags.has('--dry-run') ? ['--dry-run'] : []))
 	if (!flags.has('--dry-run')) await applyOrBuild()
 }
 
 async function remove() {
 	await requireWorkspace()
-	if (!positional.length) throw new Error('remove: name a mod')
+	if (!positional.length) throw new Error('Which mod? Example: tldraw-mods remove landmark')
 	for (const name of positional) {
 		const file = join(cwd, 'src/mods', `${name}.tsx`)
-		if (!await exists(file)) throw new Error(`Not installed: src/mods/${name}.tsx`)
+		if (!await exists(file)) throw new Error(`${name} is not installed here (no src/mods/${name}.tsx)`)
 		await rm(file)
 		console.log(`Removed src/mods/${name}.tsx`)
 	}
@@ -106,7 +107,7 @@ async function remove() {
 
 async function list(query = '') {
 	const items = (await fetchRegistry()).filter(item => !query || `${item.name} ${item.title} ${item.description} ${(item.categories ?? []).join(' ')}`.toLowerCase().includes(query.toLowerCase()))
-	if (!items.length) return console.log('No matches.')
+	if (!items.length) return console.log('Nothing matched.')
 	const width = Math.max(...items.map(item => item.name.length))
 	for (const item of items) console.log(`${item.name.padEnd(width)}  ${item.description ?? ''}`)
 }
