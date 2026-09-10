@@ -11,7 +11,8 @@ const hub = process.env.TLDRAW_MODS_HUB ?? 'btn0s/tldraw-mods'
 // Pinned in package.json. shadcn's "." export is its CLI entry.
 const shadcnBin = fileURLToPath(import.meta.resolve('shadcn'))
 const [command, ...args] = process.argv.slice(2)
-const flags = new Set(args.filter(arg => arg.startsWith('--')))
+const flags = new Set(args.filter(arg => arg.startsWith('--')).map(arg => arg.split('=')[0]))
+const doc = args.find(arg => arg.startsWith('--doc='))?.slice(6)
 const positional = args.filter(arg => !arg.startsWith('--'))
 const cwd = process.cwd()
 
@@ -25,7 +26,8 @@ const usage = `tldraw-mods <command>
   apply [doc.tldraw] Bundle and load into the open document(s)
   build              Bundle only, as a check
 
-Flags: --dry-run (add), --no-apply (add/remove)
+Flags: --doc=<file.tldraw> apply to that document instead of ones inside this folder (add/remove)
+       --dry-run (add), --no-apply (add/remove)
 Hub: ${hub} (override with TLDRAW_MODS_HUB)`
 
 function run(file, argv, options = {}) {
@@ -62,7 +64,7 @@ async function apply(doc) {
 // Build, then apply if a matching document is open; otherwise say how.
 async function applyOrBuild() {
 	if (flags.has('--no-apply')) return build()
-	try { await apply() } catch (error) {
+	try { await apply(doc) } catch (error) {
 		if (error.code !== 2) throw error
 		await build()
 		console.log('Then: tldraw-mods apply')
@@ -146,7 +148,7 @@ const componentsJson = `{
 }
 `
 
-const commands = { init, add, remove, list: () => list(), search: () => list(positional.join(' ')), apply: () => apply(positional[0]), build: async () => { await requireWorkspace(); await build() } }
+const commands = { init, add, remove, list: () => list(), search: () => list(positional.join(' ')), apply: () => apply(positional[0] ?? doc), build: async () => { await requireWorkspace(); await build() } }
 try {
 	if (!command || !(command in commands)) { console.log(usage); process.exit(command ? 1 : 0) }
 	await commands[command]()

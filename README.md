@@ -2,12 +2,37 @@
 
 Mods for [tldraw offline](https://github.com/tldraw/tldraw-offline): custom shapes, tools, and UI installed into a document with one command. Browse at [tldraw-mods.pages.dev](https://tldraw-mods.pages.dev).
 
+## How to use
+
+You need the [tldraw offline](https://offline.tldraw.com) desktop app and Node 20+. Mods are per document: each `.tldraw` file carries its own script, and a workspace folder is where that script is assembled.
+
+**1. Make a folder and put your document in it.** The folder is the workspace; the document lives inside so the CLI knows which one to update.
+
 ```sh
-npx tldraw-mods init          # once per document-script workspace
-npx tldraw-mods add landmark  # installs, bundles, and applies to the open document
+mkdir my-canvas && cd my-canvas
+# File → New in tldraw offline, then File → Save into this folder as my-canvas.tldraw
 ```
 
-This repo is three things:
+**2. Set up the workspace.** One time per folder. Writes the build, a `src/` with the shell and design tokens, and installs dependencies.
+
+```sh
+npx tldraw-mods init
+```
+
+**3. Add mods.** With the document open in the app, `add` downloads the mod into `src/mods/`, bundles, loads it into the open document, and saves. The new tool appears at the end of the toolbar.
+
+```sh
+npx tldraw-mods add landmark
+npx tldraw-mods add browser
+```
+
+**4. Later.** `npx tldraw-mods list` shows what is available; `remove browser` deletes it and reloads; `apply` reloads after you edit anything in `src/`. The script is saved inside the `.tldraw` file, so the document keeps its mods when you open it anywhere, with or without this folder.
+
+If the document is somewhere else, pass it: `npx tldraw-mods add landmark --doc=/path/to/file.tldraw`. Any shadcn GitHub registry works as a source: `npx tldraw-mods add owner/repo/item`.
+
+Only install mods from people you trust. A document script runs with the app's permissions whenever the file is opened.
+
+## What is in this repo
 
 - **`registry.json`** — a [shadcn GitHub registry](https://ui.shadcn.com/docs/registry/github). The catalog. First-party mods are items with files; third-party mods are pointer items whose `registryDependencies` reference the author's own registry. CI validates every item on push and nightly.
 - **`cli/`** — `tldraw-mods`, a thin convention layer over the shadcn CLI (pinned). `init` lays down a workspace, `add`/`remove` manage `src/mods/`, `apply` loads the bundle into the open document through the app's local API. It never edits source files.

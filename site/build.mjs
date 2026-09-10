@@ -34,8 +34,18 @@ const card = item => `<li data-search="${esc(`${item.name} ${item.title} ${item.
 const index = page('tldraw-mods', `
 <h1>Mods for tldraw offline</h1>
 <p class="lede">Custom shapes, tools, and UI for <a href="https://github.com/tldraw/tldraw-offline">tldraw offline</a> documents. Install any of them into a document with one command.</p>
-<pre><code>npx tldraw-mods init      # once per document workspace
+<pre><code>npx tldraw-mods init
 npx tldraw-mods add landmark</code></pre>
+<details><summary>How to use</summary>
+<p>You need the <a href="https://offline.tldraw.com">tldraw offline</a> app and Node 20+. Mods are per document: each <code>.tldraw</code> file carries its own script, assembled in a workspace folder.</p>
+<ol>
+<li><strong>Make a folder and save your document in it.</strong> <code>mkdir my-canvas &amp;&amp; cd my-canvas</code>, then File → New in the app and File → Save into that folder.</li>
+<li><strong>Set up the workspace</strong>, once per folder: <code>npx tldraw-mods init</code>. Writes the build and a <code>src/</code> with the shell, and installs dependencies.</li>
+<li><strong>Add mods</strong> with the document open: <code>npx tldraw-mods add landmark</code>. Downloads into <code>src/mods/</code>, bundles, loads into the open document, saves. The tool appears at the end of the toolbar.</li>
+<li><strong>Later:</strong> <code>list</code>, <code>remove browser</code>, or <code>apply</code> after editing <code>src/</code>. The script is saved inside the <code>.tldraw</code> file, so the document keeps its mods wherever it is opened.</li>
+</ol>
+<p>Document elsewhere? <code>npx tldraw-mods add landmark --doc=/path/to/file.tldraw</code>. Any shadcn GitHub registry works: <code>npx tldraw-mods add owner/repo/item</code>. Only install mods from people you trust; a document script runs with the app's permissions whenever the file is opened.</p>
+</details>
 <input id="q" type="search" placeholder="Search mods" aria-label="Search mods" autocomplete="off">
 <ul id="mods">${registry.items.map(card).join('\n')}</ul>
 <script>const q=document.getElementById('q'),items=[...document.querySelectorAll('#mods li')];q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();for(const li of items)li.hidden=v&&!li.dataset.search.includes(v)})</script>`)
@@ -104,6 +114,7 @@ h1{font-size:28px;letter-spacing:-.01em;margin:24px 0 8px}h2{font-size:17px;marg
 code{font:13px var(--mono)}pre{background:var(--well);border-radius:10px;padding:12px 14px;overflow:auto;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}p>code,li>code,li code{background:var(--well);padding:2px 6px;border-radius:4px}
 input{width:100%;font:inherit;padding:10px 14px;border:0;border-radius:10px;background:var(--well);color:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.08);margin:8px 0 20px}input:focus{outline:none}
 #mods{list-style:none;padding:0;margin:0;display:grid;gap:12px}#mods li{padding:16px;border-radius:10px;border:1px solid var(--line);display:grid;gap:6px}#mods li a{text-decoration:none}#mods li p{margin:0;color:var(--muted)}#mods li code{background:var(--well);padding:4px 8px;border-radius:6px;justify-self:start}
+details{margin:0 0 8px;padding:12px 16px;border:1px solid var(--line);border-radius:10px}summary{cursor:pointer;font-weight:600}details ol{padding-left:20px}details li{margin:6px 0}
 ul.plain{list-style:none;padding:0;margin:0}.alt{color:var(--muted)}footer{color:var(--muted);font-size:13px;padding:40px 20px}
 `
 
