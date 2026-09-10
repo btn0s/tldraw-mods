@@ -1,5 +1,5 @@
 import type { ConfigScriptContext } from 'tldraw-offline/script-context'
-import { DefaultContextMenu, DefaultContextMenuContent, DefaultToolbar, DefaultToolbarContent, TldrawUiMenuGroup, TldrawUiMenuItem, useEditor, useValue, type TLUiContextMenuProps } from 'tldraw'
+import { ArrowDownToolbarItem, ArrowLeftToolbarItem, ArrowRightToolbarItem, ArrowToolbarItem, ArrowUpToolbarItem, AssetToolbarItem, CheckBoxToolbarItem, CloudToolbarItem, DefaultContextMenu, DefaultContextMenuContent, DefaultToolbar, DiamondToolbarItem, DrawToolbarItem, EllipseToolbarItem, EraserToolbarItem, FrameToolbarItem, HandToolbarItem, HeartToolbarItem, HexagonToolbarItem, HighlightToolbarItem, LaserToolbarItem, LineToolbarItem, NoteToolbarItem, OvalToolbarItem, RectangleToolbarItem, RhombusToolbarItem, SelectToolbarItem, StarToolbarItem, TextToolbarItem, TldrawUiMenuGroup, TldrawUiMenuItem, TriangleToolbarItem, XBoxToolbarItem, useEditor, useValue, type TLUiContextMenuProps } from 'tldraw'
 import { mods } from './mods'
 import { uiCss } from './ui'
 // Compiled by the build's Tailwind plugin from src/styles/globals.css against the classes used under src/.
@@ -9,7 +9,10 @@ const css = `${tailwindCss}\n${uiCss}`
 const tools = mods.flatMap(mod => mod.tool ? [mod.tool] : [])
 const commands = mods.flatMap(mod => mod.commands ?? [])
 
-// Mod tools follow tldraw's stock toolbar items.
+// tldraw's stock toolbar, with mod tools placed after the everyday items so they stay in the visible band instead of the overflow drawer.
+const before = [SelectToolbarItem, HandToolbarItem, DrawToolbarItem, EraserToolbarItem, ArrowToolbarItem, TextToolbarItem, NoteToolbarItem, AssetToolbarItem, RectangleToolbarItem]
+const after = [EllipseToolbarItem, TriangleToolbarItem, DiamondToolbarItem, HexagonToolbarItem, OvalToolbarItem, RhombusToolbarItem, StarToolbarItem, CloudToolbarItem, HeartToolbarItem, XBoxToolbarItem, CheckBoxToolbarItem, ArrowLeftToolbarItem, ArrowUpToolbarItem, ArrowDownToolbarItem, ArrowRightToolbarItem, LineToolbarItem, HighlightToolbarItem, LaserToolbarItem, FrameToolbarItem]
+
 function ModToolItem({ id, label, icon, kbd }: (typeof tools)[number]) {
 	const editor = useEditor()
 	const isSelected = useValue('current tool', () => editor.getCurrentToolId() === id, [editor, id])
@@ -21,8 +24,9 @@ function Toolbar() {
 		<>
 			<style>{css}</style>
 			<DefaultToolbar>
-				<DefaultToolbarContent />
+				{before.map(Item => <Item key={Item.name} />)}
 				{tools.map(tool => <ModToolItem key={tool.id} {...tool} />)}
+				{after.map(Item => <Item key={Item.name} />)}
 			</DefaultToolbar>
 		</>
 	)

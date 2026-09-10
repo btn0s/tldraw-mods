@@ -1,7 +1,7 @@
 // Generates site/dist from ../registry.json: an index with search, one page per item, and (via shadcn build) r/<name>.json
 // so the site doubles as a registry endpoint. Plain HTML and one stylesheet; no framework.
 import { execFileSync } from 'node:child_process'
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { access, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -15,6 +15,14 @@ const rank = item => (item.categories ?? []).includes('shape') ? 0 : item.name =
 registry.items.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
 const install = item => item.name === 'workspace' ? 'npx tldraw-mods init' : `npx tldraw-mods add ${item.name}`
+const exists = path => access(path).then(() => true, () => false)
+// A clip for an item: site/media/<name>.{mp4,webm,jpg} recorded by record.mjs, or meta.video (an mp4 URL) for pointer items.
+async function clip(item) {
+	if (item.meta?.video) return { mp4: item.meta.video, poster: item.meta.poster }
+	if (await exists(join(site, 'media', `${item.name}.mp4`))) return { mp4: `media/${item.name}.mp4`, webm: `media/${item.name}.webm`, poster: `media/${item.name}.jpg` }
+	return null
+}
+const video = (c, depth = 0) => c ? `<video autoplay muted loop playsinline preload="metadata" poster="${'../'.repeat(depth)}${esc(c.poster ?? '')}" aria-hidden>${c.webm ? `<source src="${'../'.repeat(depth)}${esc(c.webm)}" type="video/webm">` : ''}<source src="${'../'.repeat(depth)}${esc(c.mp4)}" type="video/mp4"></video>` : ''
 const source = item => item.files?.[0] ? `${registry.homepage}/blob/main/${item.files[0].path}` : registry.homepage
 
 const page = (title, body, depth = 0) => `<!doctype html>
@@ -25,12 +33,14 @@ const page = (title, body, depth = 0) => `<!doctype html>
 <footer>A <a href="https://ui.shadcn.com/docs/registry/github">shadcn GitHub registry</a> for <a href="https://github.com/tldraw/tldraw-offline">tldraw offline</a> document scripts. Not affiliated with tldraw.</footer>
 </body></html>`
 
-const card = item => `<li data-search="${esc(`${item.name} ${item.title} ${item.description} ${(item.categories ?? []).join(' ')}`.toLowerCase())}">
-<a href="${item.name}/"><h2>${esc(item.title ?? item.name)}</h2></a>
+const card = (item, c) => `<li data-search="${esc(`${item.name} ${item.title} ${item.description} ${(item.categories ?? []).join(' ')}`.toLowerCase())}">
+${video(c)}<a href="${item.name}/"><h2>${esc(item.title ?? item.name)}</h2></a>
 <span class="label">${esc((item.categories ?? [item.type.replace('registry:', '')]).join(' · '))}</span>
 <p>${esc(item.description)}</p>
 <code>${esc(install(item))}</code></li>`
 
+const clips = Object.fromEntries(await Promise.all(registry.items.map(async item => [item.name, await clip(item)])))
+const cards = registry.items.map(item => card(item, clips[item.name]))
 const index = page('tldraw-mods', `
 <h1>Mods for tldraw offline</h1>
 <p class="lede">Custom shapes, tools, and UI for <a href="https://github.com/tldraw/tldraw-offline">tldraw offline</a> documents. Install any of them into a document with one command.</p>
@@ -47,13 +57,14 @@ npx tldraw-mods add landmark</code></pre>
 <p>Document elsewhere? <code>npx tldraw-mods add landmark --doc=/path/to/file.tldraw</code>. Any shadcn GitHub registry works: <code>npx tldraw-mods add owner/repo/item</code>. Only install mods from people you trust; a document script runs with the app's permissions whenever the file is opened.</p>
 </details>
 <input id="q" type="search" placeholder="Search mods" aria-label="Search mods" autocomplete="off">
-<ul id="mods">${registry.items.map(card).join('\n')}</ul>
+<ul id="mods">${cards.join('\n')}</ul>
 <script>const q=document.getElementById('q'),items=[...document.querySelectorAll('#mods li')];q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();for(const li of items)li.hidden=v&&!li.dataset.search.includes(v)})</script>`)
 
 const detail = item => page(`${item.title ?? item.name} · tldraw-mods`, `
 <span class="label">${esc((item.categories ?? [item.type.replace('registry:', '')]).join(' · '))}</span>
 <h1>${esc(item.title ?? item.name)}</h1>
 <p class="lede">${esc(item.description)}</p>
+${video(clips[item.name], 1)}
 <pre><code>${esc(install(item))}</code></pre>
 <p class="alt">Or with the shadcn CLI: <code>npx shadcn@latest add ${esc(hub)}/${esc(item.name)}</code></p>
 ${item.docs ? `<h3>After install</h3><pre><code>${esc(item.docs)}</code></pre>` : ''}
@@ -100,7 +111,9 @@ export default (({ config }) =&gt; {
 <h3>3. List it here</h3>
 <p>Open a pull request on <a href="${registry.homepage}">${esc(hub)}</a> adding a pointer item to <code>registry.json</code>:</p>
 <pre><code>{ "name": "my-shape", "type": "registry:component", "title": "My shape", "description": "One sentence.",
-  "categories": ["shape"], "registryDependencies": ["you/my-mods/my-shape"], "files": [] }</code></pre>
+  "categories": ["shape"], "registryDependencies": ["you/my-mods/my-shape"], "files": [],
+  "meta": { "video": "https://…/my-shape.mp4", "poster": "https://…/my-shape.jpg" } }</code></pre>
+<p><code>meta.video</code> is optional: a short silent mp4 (16:10, ~10 s) that loops on your card. Point it at a file in your repo via raw.githubusercontent.com, or a release asset.</p>
 <p>CI validates your registry on every PR and nightly; a broken upstream is flagged, not silently dropped.</p>`, 1)
 
 const css = `
@@ -113,7 +126,7 @@ h1{font-size:28px;letter-spacing:-.01em;margin:24px 0 8px}h2{font-size:17px;marg
 .lede{color:var(--muted);margin:0 0 20px}.label{font:11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 code{font:13px var(--mono)}pre{background:var(--well);border-radius:10px;padding:12px 14px;overflow:auto;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}p>code,li>code,li code{background:var(--well);padding:2px 6px;border-radius:4px}
 input{width:100%;font:inherit;padding:10px 14px;border:0;border-radius:10px;background:var(--well);color:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.08);margin:8px 0 20px}input:focus{outline:none}
-#mods{list-style:none;padding:0;margin:0;display:grid;gap:12px}#mods li{padding:16px;border-radius:10px;border:1px solid var(--line);display:grid;gap:6px}#mods li a{text-decoration:none}#mods li p{margin:0;color:var(--muted)}#mods li code{background:var(--well);padding:4px 8px;border-radius:6px;justify-self:start}
+#mods{list-style:none;padding:0;margin:0;display:grid;gap:12px}#mods li{padding:16px;border-radius:10px;border:1px solid var(--line);display:grid;gap:6px}video{width:100%;aspect-ratio:16/10;border-radius:6px;background:var(--well);display:block;margin-bottom:6px}main>video{border-radius:10px;margin:0 0 20px}@media(prefers-reduced-motion:reduce){video{display:none}}#mods li a{text-decoration:none}#mods li p{margin:0;color:var(--muted)}#mods li code{background:var(--well);padding:4px 8px;border-radius:6px;justify-self:start}
 details{margin:0 0 8px;padding:12px 16px;border:1px solid var(--line);border-radius:10px}summary{cursor:pointer;font-weight:600}details ol{padding-left:20px}details li{margin:6px 0}
 ul.plain{list-style:none;padding:0;margin:0}.alt{color:var(--muted)}footer{color:var(--muted);font-size:13px;padding:40px 20px}
 `
@@ -122,6 +135,7 @@ await rm(dist, { recursive: true, force: true })
 await mkdir(join(dist, 'protocol'), { recursive: true })
 await writeFile(join(dist, 'index.html'), index)
 await writeFile(join(dist, 'style.css'), css.trim())
+if (await exists(join(site, 'media'))) await cp(join(site, 'media'), join(dist, 'media'), { recursive: true })
 await writeFile(join(dist, 'protocol/index.html'), protocol)
 for (const item of registry.items) {
 	await mkdir(join(dist, item.name), { recursive: true })
