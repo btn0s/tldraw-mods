@@ -23,7 +23,8 @@ function Toolbar() {
 	return (
 		<>
 			<style>{css}</style>
-			<DefaultToolbar>
+			{/* The visible band grows with the mods so they never fall into the overflow drawer. */}
+			<DefaultToolbar maxItems={before.length + tools.length} maxSizePx={(before.length + tools.length) * 50}>
 				{before.map(Item => <Item key={Item.name} />)}
 				{tools.map(tool => <ModToolItem key={tool.id} {...tool} />)}
 				{after.map(Item => <Item key={Item.name} />)}
