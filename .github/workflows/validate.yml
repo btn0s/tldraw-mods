@@ -1,0 +1,21 @@
+name: validate
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 6 * * *'
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Validate registry.json and referenced files
+        run: npx --yes shadcn@4.21.0 registry validate
+      - name: Build registry JSON
+        run: npx --yes shadcn@4.21.0 build -o site/dist/r
+      - name: Workspace bundle (types need the installed app; esbuild does not)
+        working-directory: workspace
+        run: npm ci && npm run build
