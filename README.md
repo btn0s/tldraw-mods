@@ -2,6 +2,8 @@
 
 Add-ons for the [tldraw offline](https://offline.tldraw.com) desktop app: new shapes and tools you install into a drawing with one command. Browse them at [tldrawmods.dev](https://tldrawmods.dev).
 
+[![Landmark, Browser, Command bar, and Toolbar icons mods in use](site/media/collage.gif)](https://tldrawmods.dev)
+
 ## How to use
 
 You need the tldraw offline app and Node.js 20 or newer.

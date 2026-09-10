@@ -52,7 +52,7 @@ async function record(name, seconds, run, { bottom = false, size } = {}) {
 	// Card-sized, silent, loop-friendly: h264 mp4 + webm, first frame as poster.
 	execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', mov, '-an', '-vf', 'scale=960:-2,fps=30', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '28', '-movflags', '+faststart', join(media, `${name}.mp4`)])
 	execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', mov, '-an', '-vf', 'scale=960:-2,fps=30', '-c:v', 'libvpx-vp9', '-crf', '38', '-b:v', '0', join(media, `${name}.webm`)])
-	execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', mov, '-frames:v', '1', '-vf', 'scale=960:-2', join(media, `${name}.jpg`)])
+	execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', mov, '-frames:v', '1', '-vf', 'scale=960:-2', '-q:v', '8', join(media, `${name}.jpg`)])
 	execFileSync('rm', [mov])
 	console.log(`${name}: ${seconds}s → site/media/${name}.{mp4,webm,jpg}`)
 }
