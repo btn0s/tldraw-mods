@@ -11,7 +11,7 @@ const dist = join(site, 'dist')
 const registry = JSON.parse(await readFile(join(root, 'registry.json'), 'utf8'))
 const hub = registry.homepage.replace('https://github.com/', '')
 // Shapes first; plumbing and the workspace last.
-const rank = item => (item.categories ?? []).includes('shape') ? 0 : item.name === 'workspace' ? 2 : 1
+const rank = item => (item.categories ?? []).includes('shape') ? 0 : 1
 registry.items.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
 const install = item => item.name === 'workspace' ? 'npx tldraw-mods init' : `npx tldraw-mods add ${item.name}`
@@ -40,7 +40,9 @@ ${video(c)}<a href="${item.name}/"><h2>${esc(item.title ?? item.name)}</h2></a>
 <code>${esc(install(item))}</code></li>`
 
 const clips = Object.fromEntries(await Promise.all(registry.items.map(async item => [item.name, await clip(item)])))
-const cards = registry.items.map(item => card(item, clips[item.name]))
+// The front page lists what a user would add on purpose: shapes, tools, and UI. Setup and shared code stay installable but unlisted.
+const listed = registry.items.filter(item => (item.categories ?? []).some(c => ['shape', 'tool', 'ui'].includes(c)))
+const cards = listed.map(item => card(item, clips[item.name]))
 const index = page('tldraw-mods', `
 <h1>Mods for tldraw offline</h1>
 <p class="lede">New shapes and tools for the <a href="https://offline.tldraw.com">tldraw offline</a> app. Pick one, run one command, and it is in your drawing.</p>

@@ -15,7 +15,7 @@ const { port, token } = JSON.parse(await readFile(join(homedir(), 'Library/Appli
 async function request(path, body) {
 	const response = await fetch(`http://localhost:${port}${path}`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify(body) })
 	const data = await response.json()
-	if (!data.success) throw new Error(JSON.stringify(data))
+	if (!data.success) throw new Error(`${data.error}\n${body.code ?? ""}`)
 	return data.result
 }
 const docs = await request('/api/search', { code: 'return await api.getDocs()' })
@@ -35,8 +35,13 @@ async function setStage() {
 		return { x: Math.round(window.screenX + tl.x), y: Math.round(window.screenY + (window.outerHeight - window.innerHeight) + tl.y), w: ${stage.w}, h: ${stage.h} }`)
 }
 
-async function record(name, seconds, run) {
+async function record(name, seconds, run, { bottom = false, size } = {}) {
 	const rect = await setStage()
+	// Bottom-anchored stage, optionally smaller: centred on the toolbar and ending at the window's bottom edge.
+	if (bottom) {
+		if (size) { rect.x += (rect.w - size.w) / 2; rect.w = size.w; rect.h = size.h }
+		rect.y = await exec('return Math.round(window.screenY + window.outerHeight)') - rect.h
+	}
 	await mkdir(media, { recursive: true })
 	const mov = join(media, `${name}.mov`)
 	await rm(mov, { force: true })
@@ -89,6 +94,41 @@ const demos = {
 			await sleep(1500)
 			await exec(`const c = editor.getCamera(); editor.setCamera({ x: c.x - 240, y: c.y - 150, z: 1 }, { animation: { duration: 900 } })`)
 			await sleep(1200)
+		})
+	},
+	// UI mods: the stage sits over the toolbar so the bottom edge of the window is in frame.
+	async 'toolbar-icons'() {
+		await record('toolbar-icons', 6, async () => {
+			for (const id of ['draw', 'arrow', 'text', 'note', 'geo', 'select']) {
+				await exec(`editor.setCurrentTool(${JSON.stringify(id)})`)
+				await sleep(850)
+			}
+		}, { bottom: true, size: { w: 480, h: 300 } })
+	},
+	async 'command-bar'() {
+		await record('command-bar', 11, async () => {
+			await exec(`
+				const { createShapeId } = await import('tldraw')
+				editor.createShape({ id: createShapeId(), type: 'landmark', x: 60, y: 40, props: { w: 380, h: 200, label: 'Onboarding flow' } })
+				editor.createShape({ id: createShapeId(), type: 'landmark', x: 520, y: 40, props: { w: 380, h: 200, label: 'Checkout' } })`)
+			await sleep(700)
+			await exec(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', metaKey: true, bubbles: true }))`)
+			await sleep(900)
+			for (const q of ['c', 'ch', 'che', 'chec']) {
+				await exec(`const i = editor.getContainer().querySelector('.tool-search input'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(q)}); i.dispatchEvent(new Event('input', { bubbles: true }))`)
+				await sleep(220)
+			}
+			await sleep(900)
+			await exec(`editor.getContainer().querySelector('.tool-search input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`)
+			await sleep(1200)
+			for (const theme of ['light', 'dark']) {
+				await exec(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', metaKey: true, bubbles: true }))`)
+				await sleep(700)
+				await exec(`const i = editor.getContainer().querySelector('.tool-search input'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ${JSON.stringify(theme)}); i.dispatchEvent(new Event('input', { bubbles: true }))`)
+				await sleep(700)
+				await exec(`editor.getContainer().querySelector('.tool-search input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`)
+				await sleep(1100)
+			}
 		})
 	},
 	async browser() {

@@ -143,6 +143,53 @@
         }
       ],
       "docs": "Added to src/mods/. If the drawing did not reload on its own, run: npm run apply. Some sites refuse to be embedded and will show blank."
+    },
+    {
+      "name": "command-bar",
+      "type": "registry:component",
+      "title": "Command bar",
+      "description": "A shorter toolbar and a ⌘K search box. The toolbar keeps ten everyday buttons plus a More button; everything else, including tools from other mods, is a keystroke away. The search box also jumps to named landmarks on any page, flips editor preferences, and switches light and dark mode.",
+      "categories": [
+        "ui"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "files": [
+        {
+          "path": "workspace/src/mods/command-bar.tsx",
+          "type": "registry:component",
+          "target": "~/src/mods/command-bar.tsx"
+        },
+        {
+          "path": "workspace/src/command-bar.tsx",
+          "type": "registry:component",
+          "target": "~/src/command-bar.tsx"
+        }
+      ],
+      "docs": "Added to src/mods/. Press ⌘K (Ctrl+K) or the toolbar's last button. If the drawing did not reload on its own, run: npm run apply"
+    },
+    {
+      "name": "toolbar-icons",
+      "type": "registry:component",
+      "title": "Toolbar icons",
+      "description": "Rendered 3D icons for the nine main toolbar buttons in place of the flat outlines. They grow slightly on hover and when active.",
+      "categories": [
+        "ui"
+      ],
+      "files": [
+        {
+          "path": "workspace/src/mods/toolbar-icons.tsx",
+          "type": "registry:component",
+          "target": "~/src/mods/toolbar-icons.tsx"
+        },
+        {
+          "path": "workspace/src/toolbar-strip.ts",
+          "type": "registry:component",
+          "target": "~/src/toolbar-strip.ts"
+        }
+      ],
+      "docs": "Added to src/mods/. If the drawing did not reload on its own, run: npm run apply"
     }
   ]
 }

@@ -13,3 +13,6 @@ export interface ModTool { id: string; label: string; icon: TLUiIconJsx; kbd?: s
 export interface ModCommand { id: string; label: string; icon?: TLUiIconJsx; readonlyOk?: boolean; run(editor: Editor): void }
 
 export interface Mod { default: ModConfig; tool?: ModTool; commands?: ModCommand[] }
+
+// Filled by config.tsx before any mod runs, so a mod that draws its own toolbar or menu can list every installed tool.
+export const installed: { tools: ModTool[]; commands: ModCommand[] } = { tools: [], commands: [] }
