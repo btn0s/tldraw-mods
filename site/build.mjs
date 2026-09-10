@@ -10,6 +10,7 @@ const root = join(site, '..')
 const dist = join(site, 'dist')
 const registry = JSON.parse(await readFile(join(root, 'registry.json'), 'utf8'))
 const hub = registry.homepage.replace('https://github.com/', '')
+const origin = 'https://tldrawmods.dev'
 // Shapes first; plumbing and the workspace last.
 const rank = item => (item.categories ?? []).includes('shape') ? 0 : 1
 registry.items.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
@@ -25,9 +26,9 @@ async function clip(item) {
 const video = (c, depth = 0) => c ? `<video autoplay muted loop playsinline preload="metadata" poster="${'../'.repeat(depth)}${esc(c.poster ?? '')}" aria-hidden>${c.webm ? `<source src="${'../'.repeat(depth)}${esc(c.webm)}" type="video/webm">` : ''}<source src="${'../'.repeat(depth)}${esc(c.mp4)}" type="video/mp4"></video>` : ''
 const source = item => item.files?.[0] ? `${registry.homepage}/blob/main/${item.files[0].path}` : registry.homepage
 
-const page = (title, body, depth = 0) => `<!doctype html>
+const page = (title, body, depth = 0, path = '') => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><link rel="stylesheet" href="${'../'.repeat(depth)}style.css"></head>
+<title>${esc(title)}</title><link rel="stylesheet" href="${'../'.repeat(depth)}style.css"><link rel="canonical" href="${origin}/${path}"></head>
 <body><header><a href="${'../'.repeat(depth) || './'}"><strong>tldraw-mods</strong></a><nav><a href="${registry.homepage}">GitHub</a><a href="${'../'.repeat(depth)}protocol/">Share your own</a></nav></header>
 <main>${body}</main>
 <footer>Add-ons for the <a href="https://offline.tldraw.com">tldraw offline</a> app, installed with the <a href="https://ui.shadcn.com/docs/cli">shadcn CLI</a>. Not affiliated with tldraw.</footer>
@@ -73,7 +74,7 @@ ${item.docs ? `<h3>After installing</h3><pre><code>${esc(item.docs)}</code></pre
 <h3>Files it adds</h3><ul class="plain">${(item.files ?? []).map(f => `<li><code>${esc((f.target ?? f.path).replace(/^~\//, ''))}</code></li>`).join('')}</ul>
 ${item.dependencies?.length ? `<h3>Packages it installs</h3><ul class="plain">${item.dependencies.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : ''}
 ${item.registryDependencies?.length ? `<h3>Other mods it needs</h3><ul class="plain">${item.registryDependencies.map(d => `<li><code>${esc(d)}</code></li>`).join('')}</ul>` : ''}
-<p><a href="${source(item)}">Source code</a> · <a href="../r/${esc(item.name)}.json">Install manifest</a></p>`, 1)
+<p><a href="${source(item)}">Source code</a> · <a href="../r/${esc(item.name)}.json">Install manifest</a></p>`, 1, `${item.name}/`)
 
 const protocol = page('Share your own mod · tldraw-mods', `
 <h1>Share your own mod</h1>
@@ -117,7 +118,7 @@ export default (({ config }) =&gt; {
   "categories": ["shape"], "registryDependencies": ["you/my-mods/my-shape"], "files": [],
   "meta": { "video": "https://…/my-shape.mp4", "poster": "https://…/my-shape.jpg" } }</code></pre>
 <p><code>meta.video</code> is optional: a short silent mp4 (16:10, about 10 seconds) that loops on your card. Link to a file in your repo through raw.githubusercontent.com, or to a release asset.</p>
-<p>The check that runs on every pull request and every night installs from your repo. If that stops working, the entry is marked broken rather than removed.</p>`, 1)
+<p>The check that runs on every pull request and every night installs from your repo. If that stops working, the entry is marked broken rather than removed.</p>`, 1, 'protocol/')
 
 const css = `
 :root{--bg:#f5f5f5;--fg:#0f0f0f;--muted:#6a6a6a;--well:#ececec;--line:#dcdcdc;--font:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -138,6 +139,8 @@ await rm(dist, { recursive: true, force: true })
 await mkdir(join(dist, 'protocol'), { recursive: true })
 await writeFile(join(dist, 'index.html'), index)
 await writeFile(join(dist, 'style.css'), css.trim())
+// www and the pages.dev hostname redirect to the domain.
+await writeFile(join(dist, '_redirects'), `https://www.tldrawmods.dev/* ${origin}/:splat 301\nhttps://tldraw-mods.pages.dev/* ${origin}/:splat 301\n`)
 if (await exists(join(site, 'media'))) await cp(join(site, 'media'), join(dist, 'media'), { recursive: true })
 await writeFile(join(dist, 'protocol/index.html'), protocol)
 for (const item of registry.items) {

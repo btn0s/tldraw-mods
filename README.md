@@ -1,6 +1,6 @@
 # tldraw-mods
 
-Add-ons for the [tldraw offline](https://offline.tldraw.com) desktop app: new shapes and tools you install into a drawing with one command. Browse them at [tldraw-mods.pages.dev](https://tldraw-mods.pages.dev).
+Add-ons for the [tldraw offline](https://offline.tldraw.com) desktop app: new shapes and tools you install into a drawing with one command. Browse them at [tldrawmods.dev](https://tldrawmods.dev).
 
 ## How to use
 
@@ -55,7 +55,7 @@ A mod is one file, `src/mods/<name>.tsx`. Its default export is a function that 
 
 To let other people install it, add a `registry.json` to the root of your repo that lists the file and says it installs to `~/src/mods/<name>.tsx`. Do not list `tldraw`, `react`, or `react-dom` as dependencies; the app provides them. Check it with `npx shadcn@latest registry validate`. From then on, `npx tldraw-mods add you/repo/name` works for anyone.
 
-To have it listed on the site, open a pull request here adding an entry to `registry.json` that points at yours. The step-by-step version is at [tldraw-mods.pages.dev/protocol](https://tldraw-mods.pages.dev/protocol/).
+To have it listed on the site, open a pull request here adding an entry to `registry.json` that points at yours. The step-by-step version is at [tldrawmods.dev/protocol](https://tldrawmods.dev/protocol/).
 
 ## Working on this repo
 
