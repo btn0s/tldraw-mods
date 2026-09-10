@@ -36,7 +36,7 @@ h1{font-size:28px;letter-spacing:-.01em;margin:24px 0 8px}h2{font-size:17px;marg
 .lede{color:var(--muted);margin:0 0 20px}.label{font:11px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 code{font:13px var(--mono)}pre{background:var(--well);border-radius:10px;padding:12px 14px;overflow:auto;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}p>code,li>code,li code{background:var(--well);padding:2px 6px;border-radius:4px}
 input{width:100%;font:inherit;padding:10px 14px;border:0;border-radius:10px;background:var(--well);color:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.08);margin:8px 0 20px}input:focus{outline:none}
-#mods{list-style:none;padding:0;margin:0;display:grid;gap:12px}#mods li{padding:16px;border-radius:10px;border:1px solid var(--line);display:grid;gap:6px}video{width:100%;aspect-ratio:16/10;border-radius:6px;background:var(--well);display:block;margin-bottom:6px}main>video{border-radius:10px;margin:0 0 20px}@media(prefers-reduced-motion:reduce){video{display:none}}#mods li a{text-decoration:none}#mods li p{margin:0;color:var(--muted)}#mods li code{background:var(--well);padding:4px 8px;border-radius:6px;justify-self:start}
+#mods{list-style:none;padding:0;margin:0;display:grid;gap:12px}#mods li{padding:16px;border-radius:10px;border:1px solid var(--line);display:grid;gap:6px}video{width:100%;height:auto;aspect-ratio:16/10;border-radius:6px;background:var(--well);display:block;margin-bottom:6px}main>video{border-radius:10px;margin:0 0 20px}@media(prefers-reduced-motion:reduce){video{display:none}}#mods li a{text-decoration:none}#mods li p{margin:0;color:var(--muted)}#mods li code{background:var(--well);padding:4px 8px;border-radius:6px;justify-self:start}
 details{margin:0 0 8px;padding:12px 16px;border:1px solid var(--line);border-radius:10px}summary{cursor:pointer;font-weight:600}details ol{padding-left:20px}details li{margin:6px 0}
 ul.plain{list-style:none;padding:0;margin:0}.alt{color:var(--muted)}footer{color:var(--muted);font-size:13px;padding:40px 20px}
 `
@@ -192,8 +192,6 @@ A mod is one file, src/mods/<name>.tsx, whose default export is a function recei
 `)
 // Long cache for media and manifests; HTML revalidates.
 await writeFile(join(dist, '_headers'), `/media/*\n  Cache-Control: public, max-age=31536000, immutable\n/r/*\n  Cache-Control: public, max-age=3600\n/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n`)
-// www and the pages.dev hostname redirect to the domain.
-await writeFile(join(dist, '_redirects'), `https://www.tldrawmods.dev/* ${origin}/:splat 301\nhttps://tldraw-mods.pages.dev/* ${origin}/:splat 301\n`)
 if (await exists(join(site, 'media'))) await cp(join(site, 'media'), join(dist, 'media'), { recursive: true })
 await writeFile(join(dist, 'protocol/index.html'), protocol)
 for (const item of registry.items) {
